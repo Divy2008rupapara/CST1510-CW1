@@ -2,53 +2,72 @@
 RECORD CHECK  -  my version
 ===========================
 
-Name  :
-Lane  :  AI / Cyber / IT      (delete two)
-Date  :
+Name  : Divy Patel
+Lane  : IT
+Date  : 
 
 Run it:   python template.py
 
-Work through the numbered sections in order. Each one tells you what it must do.
-Delete these instructions as you replace them with your code.
+
 """
+def check_records(value, limit):
+    """calculates difference, percentage and status"""
+    difference = limit - value
+    percent = (value/limit) * 100
+    if percent >= 100:
+        status = "OVER LIMIT"
+    elif percent >= 90:
+        status = "WARNING"
+    else:
+        status = "OK"
+    return difference, percent, status
 
-# =================================================================== FUNCTIONS
-# 1. Bring back check_record(value, limit) and print_report(...) from Week 3
-#    (copy them, or rewrite them - either is fine). check_record returns
-#    difference, percent and status. print_report does all of the printing,
-#    nothing outside it should contain a print() of its own. Give each a
-#    one-line docstring.
+def print_report(hostname,gb used, gb total  ):
+    """Print the formatted record report to the console."""
+    print()
+    print("=" * 34)
+    print(f"  RECORD CHECK  -  {label}")
+    print("=" * 34)
 
-# your function(s) go here
+    print(f"{'Failed Logins':<17} :{value:>10.2f}")
+    print(f"{'Total Logins':<17} :{limit:>10.2f}")
+    print(f"{'Succesful Logins':<17} :{difference:>10.2f}")
+    print(f"{'Failure Percent':<17} :{percent:>10.2f}%")
+    print(f"{'Status':<17} : {status:>9}")
+    print("=" * 34)
+
+def load_records(path):
+    """Load comma-separated values from a file into a list of dictionaries."""
+    records_list = []
+    try:
+        with open(path, "r") as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                parts = line.strip().split(",")
+                records_list.append({
+                    "label": parts[0],
+                    "value": float(parts[1]),
+                    "limit": float(parts[2])
+                })
+        return records_list
+    except FileNotFoundError:
+        print(f"Error: The file '{path}' could not be found.")
+        return []
 
 
-# ====================================================================== STORE
-# 2. Get your records into a list of dicts, each shaped like:
-#        {"label": ..., "value": ..., "limit": ...}
-#
-#    Threshold : write the list directly in the code - at least 3 records.
-#    Typical   : instead, write a function load_records(path) that reads
-#                label,value,limit lines from a file and returns the list.
-#                Make your own data file, one record per line.
-#    Excellent : also write the results out to a new file (one line per
-#                record: label, status), as well as printing them.
+records = load_records("lab/records_sample.txt")
+over_limit_counting = 0
 
-records = []   # replace with your code
+with open("results.txt", "w") as out_file:
+    for rec in records:
+        difference, percent, status = check_records(rec["value"], rec["limit"])
 
+        if status == "OVER LIMIT":
+            over_limit_counting += 1
+            
+        print_report(rec["label"], rec["value"], rec["limit"], difference, percent, status)
 
-# =============================================================== PROCESS + OUTPUT
-# 3. Loop over records. For each one, call check_record and print_report.
-#
-#    Excellent : also keep a running count of how many were OVER LIMIT, and
-#                print that once, after the loop ends.
+        out_file.write(f"{rec['label']},{status}\n")
 
-# your loop goes here
-
-
-# ==========================================================================
-# 4. Before you finish:
-#
-#    [ ] Run it and check every record's numbers are correct by hand
-#    [ ] If you are loading from a file, check what happens when the file
-#        does not exist - write the error down
-#    [ ] Check every function still does one job
+print(f"Failed Logins over limit : {over_limit_counting}")
